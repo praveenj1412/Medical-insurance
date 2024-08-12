@@ -1,47 +1,34 @@
-
 import numpy as np
-import pickle
+import pandas as pd
 import streamlit as st
+import joblib
 
-# loading the saved model
-loaded_model = pickle.load(open('medical_insurance_cost_predictor.sav', 'rb'))
+loaded_model = joblib.load('medical_insurance_cost_predictor.sav')
 
-#creating a function for Prediction
 def medical_insurance_cost_prediction(input_data):
-    # changing the input_data to numpy array
-    input_data_as_numpy_array = np.asarray(input_data)
+    feature_names = ['age', 'sex', 'bmi', 'children', 'smoker', 'region']
 
-    # reshape the array as we are predicting for one instance
-    input_data_reshaped = input_data_as_numpy_array.reshape(1,-1)
+    input_data_df = pd.DataFrame([input_data], columns=feature_names)
 
-    prediction = loaded_model.predict(input_data_reshaped)
-    print(prediction)
-
+    prediction = loaded_model.predict(input_data_df)
     return prediction
 
 def main():
-    
-    #giving a title
-    st.title('Medical Insurance Prediction Web App')
-    
-    #getting input from the user
-    
-    age = st.text_input('Age')
-    sex = st.text_input('Sex: 0 -> Female, 1 -> Male')
-    bmi = st.text_input('Body Mass Index')
-    children = st.text_input('Number of Children')
-    smoker = st.text_input('Smoker: 0 -> No, 1 -> Yes')
-    region = st.text_input('Region of Living: 0 -> NorthEast, 1-> NorthWest, 2-> SouthEast, 3-> SouthWest')
-    
-    #code for prediction
-    diagnosis = ''
-    
-    # getting the input data from the user
-    if st.button('Predicted Medical Insurance Cost: '):
-        diagnosis = medical_insurance_cost_prediction([age,sex,bmi,children,smoker,region])
-        
-    st.success(diagnosis)
-    
+    age = st.number_input("Age", min_value=0, max_value=100, step=1)
+    sex = st.selectbox("Sex", options=["male", "female"])
+    bmi = st.number_input("BMI", min_value=0.0, step=0.1)
+    children = st.number_input("Number of Children", min_value=0, max_value=10, step=1)
+    smoker = st.selectbox("Smoker", options=["yes", "no"])
+    region = st.selectbox("Region", options=["northeast", "northwest", "southeast", "southwest"])
 
-if __name__ == '__main__':
+    sex = 1 if sex == "male" else 0
+    smoker = 1 if smoker == "yes" else 0
+    region_mapping = {"northeast": 0, "northwest": 1, "southeast": 2, "southwest": 3}
+    region = region_mapping[region]
+
+    if st.button("Predict"):
+        result = medical_insurance_cost_prediction([age, sex, bmi, children, smoker, region])
+        st.success(f"The predicted insurance cost is: ${result[0]:.2f}")
+
+if __name__ == "__main__":
     main()
