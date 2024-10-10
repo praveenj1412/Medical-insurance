@@ -14,6 +14,7 @@ def medical_insurance_cost_prediction(input_data):
     return prediction
 
 def main():
+    st.title("Medical Insurance Cost Predictor")
     age = st.number_input("Age", min_value=0, max_value=100, step=1)
     sex = st.selectbox("Sex", options=["male", "female"])
     bmi = st.number_input("BMI", min_value=0.0, step=0.1)
